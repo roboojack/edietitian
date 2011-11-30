@@ -1,0 +1,134 @@
+/**
+ * $Date: 2011-11-18 10:07:43 -0500 (Fri, 18 Nov 2011) $
+ * $Revision: 192 $
+ * $Author: robjackAdmin $
+ * $Id: SpecialIllness_Questions.drl 192 2011-11-18 15:07:43Z robjackAdmin $
+ * 
+ * @author Robert Jackson
+ *
+ * © 2011 Robert Jackson
+ *
+ */
+
+package com.mycomism.edietitian
+
+
+import org.tohu.Group;
+import org.tohu.MultipleChoiceQuestion;
+import org.tohu.MultipleChoiceQuestion.PossibleAnswer;
+import org.tohu.Note;
+import org.tohu.Question;
+import org.tohu.Questionnaire;
+import org.tohu.Answer;
+import com.mycomism.OtherRecommendation;
+import com.mycomism.ExerciseRecommendation;
+import com.mycomism.EatingRecommendation;
+import com.mycomism.SFact;
+import com.mycomism.Recommendation.Priority;
+import com.mycomism.Source;
+
+/*
+THESE QUESTIONS WILL BE ASKED TO EVERYONE. THEY HAVE TO DO 
+WITH SPECIAL ILLNESSES SUCH AS DIABETES, GOUT, HIGH BLOOD 
+PRESSURE, ETC.
+*/
+rule "insert group of special illnesses questions that needs to be obtained from *ALL* people"
+dialect "mvel"
+then
+	Group group = new Group("specialIllnessQuestions");
+	group.setLabel("Check any of the boxes below if you have any Special Illnesses: ");
+	group.setItems({
+		"specialIllnessProgress", // progress bar
+		"gout", 
+		"foodAllergies",
+		"diabetes",
+		"highBloodPressure", 
+		"highCholesterol",
+		"osteoporosis",
+		"stroke",
+		"heartAttack",
+	});
+	group.setPresentationStyles({"section"});
+	insertLogical(group);
+	
+	Question question = new Question("gout");
+	question.setAnswerType(Question.TYPE_BOOLEAN);
+	question.setPreLabel("Gout");
+	insertLogical(question);	
+	
+//	question = new Question("foodAllergies");
+//	question.setAnswerType(Question.TYPE_BOOLEAN);
+//	question.setPreLabel("Food Allergies");
+//	insertLogical(question);	
+
+	question = new Question("diabetes");
+	question.setAnswerType(Question.TYPE_BOOLEAN);
+	question.setPreLabel("Diabetes");
+	insertLogical(question);	
+
+	question = new Question("highBloodPressure");
+	question.setAnswerType(Question.TYPE_BOOLEAN);
+	question.setPreLabel("High Blood Pressure");
+	insertLogical(question);	
+
+	question = new Question("highCholesterol");
+	question.setAnswerType(Question.TYPE_BOOLEAN);
+	question.setPreLabel("High Cholesterol");
+	insertLogical(question);	
+
+	question = new Question("osteoporosis");
+	question.setAnswerType(Question.TYPE_BOOLEAN);
+	question.setPreLabel("Osteoporosis");
+	insertLogical(question);	
+
+//	question = new Question("stroke");
+//	question.setAnswerType(Question.TYPE_BOOLEAN);
+//	question.setPreLabel("Stroke");
+//	insertLogical(question);	
+
+//	question = new Question("heartAttack");
+//	question.setAnswerType(Question.TYPE_BOOLEAN);
+//	question.setPreLabel("Heart Attack");
+//	insertLogical(question);	
+	
+end
+
+
+rule "if answered yes to any special illnesses, recommend having a lab test"
+when
+	Question(
+		id in 
+		(
+			"diabetes",
+			"foodAllergies",
+			"gout",
+			"heartAttack",
+			"highBloodPressure",
+			"highCholesterol",
+			"osteoporosis",
+			"stroke"
+		),
+		answer == true
+	)
+then
+	insertLogical(
+		new OtherRecommendation(
+			"According to the information you gave us, " + 
+			"you have a special illness which requires a lab test to ensure you do in fact " +
+			"have the illness. You should visit your doctor and have a lab test immediately " +
+			"to confirm that you have a special illness if you have not already done so."
+		)
+	);
+end
+
+	
+rule "specialIllnessQuestions Active"
+dialect "mvel"
+when
+	Questionnaire(activeItem == "specialIllnessQuestions");
+then
+	note = new Note("specialIllnessProgress");
+	note.setLabel("75%");
+	note.setPresentationStyles({"progress"});
+	insertLogical(note);
+end

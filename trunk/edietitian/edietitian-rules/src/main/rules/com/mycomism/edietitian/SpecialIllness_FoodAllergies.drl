@@ -1,0 +1,100 @@
+/**
+ * $Date: 2011-10-24 14:55:09 -0500 (Mon, 24 Oct 2011) $
+ * $Revision: 174 $
+ * $Author: robjackAdmin $
+ * $Id: SpecialIllness_FoodAllergies.drl 174 2011-10-24 19:55:09Z robjackAdmin $
+ * 
+ * @author Robert Jackson
+ *
+ * © 2011 Robert Jackson
+ *
+ */
+
+package com.mycomism.edietitian
+
+
+
+import org.tohu.Group;
+import org.tohu.MultipleChoiceQuestion;
+import org.tohu.MultipleChoiceQuestion.PossibleAnswer;
+import org.tohu.Note;
+import org.tohu.Question;
+import org.tohu.Questionnaire;
+import org.tohu.Answer;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ArrayList;
+import java.math.BigDecimal;
+import com.mycomism.OtherRecommendation;
+import com.mycomism.ExerciseRecommendation;
+import com.mycomism.EatingRecommendation;
+import com.mycomism.SFact;
+
+
+
+
+
+rule "food allergies questions"
+dialect "mvel"
+when
+	Question(id == "foodAllergies", answer == true);
+then
+	Group group = new Group("foodAllergyQuestions");
+	group.setLabel("Tell me more about your food allergies:");
+	group.setItems({
+		"foodAllergyWheat", 
+		"foodAllergyEgg"  , 
+		"foodAllergyDairy", 
+		"foodAllergyNut"  , 
+		"foodAllergyOther"
+		});
+	insertLogical(group);
+	
+	Question question = new Question("foodAllergyWheat");
+	question.setAnswerType(Question.TYPE_BOOLEAN);
+	question.setPreLabel("Wheat Allergy");
+	insertLogical(question);	
+	
+	question = new Question("foodAllergyEgg");
+	question.setAnswerType(Question.TYPE_BOOLEAN);
+	question.setPreLabel("Egg Allergy");
+	insertLogical(question);	
+
+	question = new Question("foodAllergyDairy");
+	question.setAnswerType(Question.TYPE_BOOLEAN);
+	question.setPreLabel("Dairy Allergy");
+	insertLogical(question);	
+
+	question = new Question("foodAllergyNut");
+	question.setAnswerType(Question.TYPE_BOOLEAN);
+	question.setPreLabel("Nut Allergy");
+	insertLogical(question);	
+
+	question = new Question("foodAllergyOther");
+	question.setAnswerType(Question.TYPE_BOOLEAN);
+	question.setPreLabel("Other Food Allergy");
+	insertLogical(question);	
+
+	
+end
+
+
+rule "wheat allergy recommendations"
+dialect "mvel"
+when
+	Question(id == "foodAllergyWheat", answer == true);
+then
+	insertLogical(
+		new OtherRecommendation(
+		"According to the information you gave us, " + 
+		"you have a <b>Wheat Allergy</b>, because of this you must: " +
+		"<ul>" + 
+			"<li></li>" + 
+			"<li></li>" + 
+			"<li></li>" + 
+		"</ul>" +
+		"(See: <a href=\"HYPERLINK\">TITLE</a>)"	 
+		)
+	);
+end
+

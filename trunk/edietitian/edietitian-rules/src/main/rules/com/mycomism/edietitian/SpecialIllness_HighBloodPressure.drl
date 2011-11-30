@@ -1,0 +1,152 @@
+/**
+ * $Date: 2011-10-24 14:55:09 -0500 (Mon, 24 Oct 2011) $
+ * $Revision: 174 $
+ * $Author: robjackAdmin $
+ * $Id: SpecialIllness_HighBloodPressure.drl 174 2011-10-24 19:55:09Z robjackAdmin $
+ * 
+ * @author Robert Jackson
+ *
+ * © 2011 Robert Jackson
+ *
+ */
+
+package com.mycomism.edietitian
+
+
+
+import org.tohu.Item;
+import org.tohu.Group;
+import org.tohu.MultipleChoiceQuestion;
+import org.tohu.MultipleChoiceQuestion.PossibleAnswer;
+import org.tohu.Note;
+import org.tohu.Question;
+import org.tohu.Questionnaire;
+import org.tohu.Answer;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ArrayList;
+import java.math.BigDecimal;
+import com.mycomism.OtherRecommendation;
+import com.mycomism.ExerciseRecommendation;
+import com.mycomism.EatingRecommendation;
+import com.mycomism.SFact;
+import com.mycomism.Recommendation.Priority;
+import com.mycomism.Source;
+
+
+
+
+rule "If the patient has High Blood Pressure -> background information"
+dialect "mvel"
+no-loop
+when
+	Question(id == "highBloodPressure", answer == true);
+then
+	insertLogical(
+		new OtherRecommendation(
+			"highBloodPressure",
+			Priority.HIGH,
+			"According to the information you gave us, " + 
+			"you have <b>High Blood Pressure (Hypertension)</b>. " + 
+			"You are not alone. It is estimated that 74.5 million Americans - 34 percent of U.S. adults - have hypertension " +
+			"and 36 percent of American adults have prehypertension - blood pressure numbers that are higher than normal." +
+			"Hypertension is a major <u>risk factor for heart disease, stroke, congestive heart failure, and kidney disease</u>. " +
+			"Below are the dietary factors that increase blood pressure: " +
+			"<ul>" + 
+				"<li>Excessive sodium</li>" + 
+				"<li>Obesity</li>" + 
+				"<li>Excess alcohol consumtion.</li>" + 
+			"</ul> ",
+			new Source(
+				"http://www.cnpp.usda.gov/Publications/DietaryGuidelines/2010/PolicyDoc/PolicyDoc.pdf",
+				"Dietary Guidelines for Americans 2010. Page 3."	 
+			)
+		)
+	);
+	
+	Group group = new Group("highBloodPressureQuestions");
+	group.setLabel("Please answer these questions about your <b>High Blood Pressure</b>: ");
+	group.setItems({
+		"useSodiumSubstitute"
+	});
+	group.setPresentationStyles({"section"});
+	insertLogical(group);	
+	
+	Question question = new Question("useSodiumSubstitute");
+	question.setAnswerType(Question.TYPE_BOOLEAN);
+	question.setPreLabel("Do you regularly use a sodium substitute (sometimes called \"salt-lite\")?");
+	question.setPresentationStyles({"radio"});
+	insertLogical(question);
+end
+
+
+rule "recommend sodium intake for {age >= 51, highBloodPressure, diabetes}"
+dialect "mvel"
+no-loop
+when
+	Question(id == "age", answered == true, answer >= 51) ||
+	Question(id == "highBloodPressure", answered == true, answer == true) ||
+	Question(id == "diabetes", answered == true, answer == true);
+then
+	insertLogical(
+		new EatingRecommendation(
+			"sodiumLimit",
+			Priority.HIGH,
+			"You should limit your daily sodium intake to 1500mg. ",
+			new Source(
+				"http://www.cnpp.usda.gov/Publications/DietaryGuidelines/2010/PolicyDoc/PolicyDoc.pdf",
+				"Dietary Guidelines for Americans 2010. Page 21"	 
+			)
+		)
+	);
+end
+
+
+
+rule "recommend sodium intake for {age < 51, not(highBloodPressure), not(diabetes)}"
+dialect "mvel"
+no-loop
+when
+	Question(id == "age", answered == true, answer < 51) &&
+	Question(id == "highBloodPressure", (answered == false || answer == false)) &&
+	Question(id == "diabetes", (answer == false || answered == false));
+then
+	insertLogical(
+		new EatingRecommendation(
+			"sodiumLimit",
+			Priority.HIGH,
+			"You should limit your daily sodium intake to 2300mg. ",
+			new Source(
+				"http://www.cnpp.usda.gov/Publications/DietaryGuidelines/2010/PolicyDoc/PolicyDoc.pdf",
+				"Dietary Guidelines for Americans 2010. Page 21"	 
+			)
+		)
+	);
+end
+
+
+// TODO : find infomation on potassium/sodium "salt substitutes"
+/*
+rule "If has High Blood Pressure, and doesn't take 'salt-lite' -> background information"
+dialect "mvel"
+no-loop
+when
+	Question(id == "highBloodPressure", answer == true);
+	Question(id == "useSodiumSubstitute", (answer == false || answered == false ));
+then
+	insertLogical(
+		new EatingRecommendation("You have <b>High Blood Pressure (Hypertension)</b>. " + 
+		"You are not alone. It is estimated that 74.5 million Americans - 34 percent of U.S. adults - have hypertension " +
+		"and 36 percent of American adults have prehypertension - blood pressure numbers that are higher than normal." +
+		"Hypertension is a major <u>risk factor for heart disease, stroke, congestive heart failure, and kidney disease</u>. " +
+		"Below are the dietary factors that increase blood pressure: " +
+		"<ul>" + 
+			"<li>Excessive sodium and insufficient potassium intake</li>" + 
+			"<li>Obesity</li>" + 
+			"<li>Excess alcohol consumtion.</li>" + 
+		"</ul>" +
+		"(See: <a href=\"http://www.cnpp.usda.gov/Publications/DietaryGuidelines/2010/PolicyDoc/PolicyDoc.pdf\">Dietary Guidelines for Americans 2010. Page 3.</a>)"	 
+		)
+	);
+end
+*/

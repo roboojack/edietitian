@@ -1,0 +1,60 @@
+/**
+ * $Date: 2011-11-07 11:53:26 -0500 (Mon, 07 Nov 2011) $
+ * $Revision: 186 $
+ * $Author: robjackAdmin $
+ * $Id: SpecialIllness_Osteoporosis.drl 186 2011-11-07 16:53:26Z robjackAdmin $
+ * 
+ * @author Robert Jackson
+ *
+ * © 2011 Robert Jackson
+ *
+ */
+
+package com.mycomism.edietitian
+
+
+
+import org.tohu.Group;
+import org.tohu.MultipleChoiceQuestion;
+import org.tohu.MultipleChoiceQuestion.PossibleAnswer;
+import org.tohu.Note;
+import org.tohu.Question;
+import org.tohu.Questionnaire;
+import org.tohu.Answer;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ArrayList;
+import java.math.BigDecimal;
+import com.mycomism.OtherRecommendation;
+import com.mycomism.ExerciseRecommendation;
+import com.mycomism.EatingRecommendation;
+import com.mycomism.SFact;
+import com.mycomism.Recommendation.Priority;
+import com.mycomism.Source;
+
+
+
+rule "increased risk of osteoporosis -> give diet recommendations"
+dialect "mvel"
+no-loop
+when
+	Question(id == "age", answered == true, answer >= 50) &&  Question(id == "gender", answered == true, answer == "female") ||
+	Question(id == "age", answered == true, answer >= 70) &&  Question(id == "gender", answered == true, answer == "male")   ||
+	OtherRecommendation(id == "heavyDrinking") ||
+	Question(id == "smoke", answer == true)
+then
+	insertLogical(
+		new EatingRecommendation(
+			"calciumAndVitimanDMinimums",
+			Priority.HIGH,
+			"You are at an increased risk of Osteoporosis (loss of bone density). Get at least 1,200 milligrams per day of calcium and 800 - 1,000 " + 
+			"international units of vitamin D3. Vitamin D helps your body absorb calcium. Your doctor may recommend a supplement to give you the " + 
+			"calcium and vitamin D you need. Follow a diet that provides the proper amount of calcium, vitamin D, and protein. While this will " + 
+			"not completely stop bone loss, it will guarantee that a supply of the materials the body uses to form and maintain bones is available.",
+			new Source(
+				"http://www.ncbi.nlm.nih.gov/pubmedhealth/PMH0001400/",
+				"Osteoporosis - PubMed Health"	 
+			)
+		)
+	);
+end

@@ -1,0 +1,89 @@
+	<div id="main">
+
+		<!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ HOME -->
+		<div id="home" class="content">
+			<h2>Home</h2>
+			<a href="/edietitian-web/reset.jsp?knowledgebase=edietitian&null"><h1>Start eDietitian Now!</h1></a>
+		</div>
+
+		<!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ ABOUT -->
+		<div id="about" class="content">
+			<h2>About</h2>
+			<p>According to the <a href="http://www.cdc.gov/obesity/">Center for Disease Control</a>, American society
+				has become characterized by environments that promote increased food
+				intake, non-healthy foods, and physical inactivity. To counter
+				this, there has been an explosion of weight loss techniques. Many
+				people spend large sums of money in search of a working weight
+				maintenance approach.</p>
+
+			<p></p>
+			<p>edietitian is an expert system that runs on <a href="http://www.jboss.org/drools">Drools</a> and <a href="http://www.jboss.org/tohu">Tohu</a>. It allows users to participate in a virtual
+			dietitian session using just about any computer with a web browser and internet access.
+			</p>
+			<p>edietitian was created by Robert Jackson while at the <a href="http://www.uwf.edu/computerscience/">University of West Florida</a>.</p>
+			<p>
+				To get started with edietitian, click the "Start eDietitian!" button above or click 
+				<a href="/edietitian-web/reset.jsp?knowledgebase=edietitian&null">Start eDietitian</a>.
+			</p>
+
+		</div>
+
+
+		<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+TUTORIAL -->
+		<div id="tutorial" class="content">
+
+			<h2>Development</h2>
+			<p>
+				As edietitian is still a young project, we're looking for interested people to help us
+				develop the software further. The biggest problem we have faced has been the extraction of knowledge 
+				from reliable sources. We are <b>seeking doctors, nutritionists, and dietitians to help us</b> develop
+				our knowledge base. We very much want to bring this useful and free tool to fruitation (no pun intended).
+			</p>
+						<h2>Timeline</h2>
+
+			<div id="edietitian-merged">
+
+				<h3>edietitian</h3>
+
+				<div class="entry">
+					<span class="point">May, 2011</span> <span class="description">Project
+						Website</span>
+				</div>
+
+				<div class="entry">
+					<span class="point">June, 2011</span> <span class="description">
+						edietitianClient, a Google Android application that will allow
+						user can assess their diet and health. </span>
+
+				</div>
+
+				<div class="entry">
+					<span class="point">August, 2011</span> <span class="description">
+						edietitianServer, a JavaVM software application which interface
+						with JBoss Drools. </span>
+				</div>
+
+				<div class="entry">
+
+					<span class="point">November, 2011</span> <span class="description">
+						JBoss Knowledge-Base and Rules for edietitian. </span>
+				</div>
+
+			</div>
+
+
+			<div class="bottom"></div>
+			
+		</div>
+
+		<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ DOCUMENTATION -->
+		<div id="documentation" class="content">
+			<h2>Documentation</h2>
+			<h3>Links to Knowledge Sources</h3>
+			<ul>
+				<li><a href="http://www.cnpp.usda.gov/DGAs2010-PolicyDocument.htm">Dietary Guidelines for Americans, 2010</a></li>
+			</ul>
+		</div>
+
+	</div>

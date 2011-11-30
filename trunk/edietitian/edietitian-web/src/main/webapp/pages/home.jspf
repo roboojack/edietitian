@@ -1,0 +1,31 @@
+<title>Home</title>
+
+
+
+<div class="feedback">
+		<center><h1><a href="/edietitian-web/questionnaire.jsp?knowledgebase=edietitian">Start eDietitian Now!</a></h1></center>
+	<h2>Home</h2>
+			
+			
+			According to the <a href="http://www.cdc.gov/obesity/">Center for Disease Control</a>, American society
+				has become characterized by environments that promote increased food
+				intake, non-healthy foods, and physical inactivity. To counter
+				this, there has been an explosion of weight loss techniques. Many
+				people spend large sums of money in search of a working weight
+				maintenance approach.
+				<br>
+				
+			<h3>Welcome to eDietitian!</h3> 
+				eDietitian is a <b>free</b> expert system  built on solid scientific evidence to help people improve their diet. It allows users to participate in a virtual
+			dietitian session using any computer with a web browser and internet access.
+			
+			<br><p>eDietitian was created by Robert Jackson while at the <a href="http://www.uwf.edu/computerscience/">University of West Florida</a>.<br></p>
+			<br>
+			
+
+			<h2>Documentation</h2>
+				<h3>Links to Knowledge Sources</h3>
+			<ul>
+				<li><a href="http://www.cnpp.usda.gov/DGAs2010-PolicyDocument.htm">Dietary Guidelines for Americans, 2010</a></li>
+			</ul>
+</div>

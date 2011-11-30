@@ -1,0 +1,78 @@
+/**
+ * $Date: 2011-10-24 14:55:09 -0500 (Mon, 24 Oct 2011) $
+ * $Revision: 174 $
+ * $Author: robjackAdmin $
+ * $Id: SpecialIllness_Gout.drl 174 2011-10-24 19:55:09Z robjackAdmin $
+ * 
+ * @author Robert Jackson
+ *
+ * © 2011 Robert Jackson
+ *
+ */
+
+package com.mycomism.edietitian
+
+
+
+import org.tohu.Group;
+import org.tohu.MultipleChoiceQuestion;
+import org.tohu.MultipleChoiceQuestion.PossibleAnswer;
+import org.tohu.Note;
+import org.tohu.Question;
+import org.tohu.Questionnaire;
+import org.tohu.Answer;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ArrayList;
+import java.math.BigDecimal;
+import com.mycomism.OtherRecommendation;
+import com.mycomism.ExerciseRecommendation;
+import com.mycomism.EatingRecommendation;
+import com.mycomism.SFact;
+import com.mycomism.Recommendation.Priority;
+import com.mycomism.Source;
+
+
+/*
+  If the patient has Gout 
+	-> 
+  recommend { 
+    low purine foods, eat less meat, eat less seafood, 
+    eat MORE diary
+    
+    (Source: http://www.nejm.org/doi/full/10.1056/NEJMoa035700#t=abstract)
+  }
+*/
+rule "If the patient has Gout -> give recommendations"
+dialect "mvel"
+when
+	Question(id == "gout", answer == true);
+then
+	insertLogical(
+		new OtherRecommendation(
+			"hasGoutBackground",
+			Priority.HIGH,
+			"According to the information you gave us, " + 
+			"you have <b>Gout</b>, because of this you should restrict your intake of purines. For a listing of foods and their purine content, see " + 
+			"<a href=\"http://www.acumedico.com/purine.htm\">Various food types and their purine content</a>. " + 
+			"If you have multiple Gout attacks per year or the attacks are quite severe, your doctor may prescribe " + 
+			"medications to decrease uric acid levels in your blood.",
+			new Source(
+				"http://www.ncbi.nlm.nih.gov/pubmedhealth/PMH0001459/",
+				"Gout - PubMed Health"
+			)	 
+		)
+	);
+
+	insertLogical(
+		new OtherRecommendation(
+			"hasGout",
+			Priority.HIGH,
+			"Note that many nuts and cheeses have very low purine content, so they are safe to eat.",
+			new Source(
+				"http://www.nejm.org/doi/full/10.1056/NEJMoa035700#t=abstract",
+				"Purine-Rich Foods, Dairy and Protein Intake, and the Risk of Gout in Men"
+			)	 
+		)
+	);
+end

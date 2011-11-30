@@ -1,0 +1,115 @@
+/**
+ * $Date: 2011-11-29 17:32:35 -0500 (Tue, 29 Nov 2011) $
+ * $Revision: 197 $
+ * $Author: robjackAdmin $
+ * $Id: Tobacco.drl 197 2011-11-29 22:32:35Z robjackAdmin $
+ * 
+ * @author Robert Jackson
+ *
+ * © 2011 Robert Jackson
+ *
+ */
+package com.mycomism.edietitian
+
+import java.util.Calendar;
+
+
+import org.tohu.Group;
+import org.tohu.MultipleChoiceQuestion;
+import org.tohu.MultipleChoiceQuestion.PossibleAnswer;
+import org.tohu.Note;
+import org.tohu.Question;
+import org.tohu.Questionnaire;
+import org.tohu.Answer;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ArrayList;
+import java.math.BigDecimal;
+import com.mycomism.OtherRecommendation;
+import com.mycomism.ExerciseRecommendation;
+import com.mycomism.EatingRecommendation;
+import com.mycomism.SFact;
+
+
+
+
+rule "not a smoker -> tell them good job"
+dialect "mvel"
+when
+	Question(id == "smoke", answer == false);
+then
+	insertLogical(new OtherRecommendation("You should continue to not smoke"));
+end
+
+
+rule "answered yes to smoke -> ask smoking questions"
+dialect "mvel"
+when
+	Question(id == "smoke", answer == true);
+then
+	Group group = new Group("smokingQuestions");
+	group.setLabel("Tell me more about your smoking:");
+	group.setItems({"cigarettePic", "cigarettesPerDay", "smokingYears", "lungCancerHistory"});
+	insertLogical(group);
+
+
+	Note note = new Note("cigarettePic");
+	note.setPresentationStyles({"image"});
+	note.setLabel("images/cigarette.jpg");
+	insertLogical(note);
+
+
+	MultipleChoiceQuestion multi = new MultipleChoiceQuestion("cigarettesPerDay");
+	multi.setAnswerType(Question.TYPE_NUMBER);
+	multi.setPreLabel("How many cigarettes do you smoke per day?");
+	multi.setPossibleAnswers({
+		new PossibleAnswer("",  "Cigarettes per day..."),
+		new PossibleAnswer("1",  "<5"),
+		new PossibleAnswer("5",  "5"),
+		new PossibleAnswer("10",  "10"),
+		new PossibleAnswer("15",  "15"),
+		new PossibleAnswer("20",  "20"),
+		new PossibleAnswer("25",  "20+"),
+	});
+	insertLogical(multi);
+
+	multi = new MultipleChoiceQuestion("smokingYears");
+	multi.setAnswerType(Question.TYPE_NUMBER);
+	multi.setPreLabel("How many years have you been smoking?");
+	multi.setPossibleAnswers({
+		new PossibleAnswer("",  "Years smoking..."),
+		new PossibleAnswer("1",  "<5"),
+		new PossibleAnswer("5",  "5"),
+		new PossibleAnswer("10",  "10"),
+		new PossibleAnswer("15",  "15"),
+		new PossibleAnswer("20",  "20"),
+		new PossibleAnswer("25",  "20+"),
+	});
+	insertLogical(multi);
+	
+	Question question = new Question("lungCancerHistory");
+	question.setAnswerType(Question.TYPE_BOOLEAN);
+	question.setPreLabel("Is there a family history of lung cancer?");
+	question.setPresentationStyles({"radio"});
+	insertLogical(question);
+end
+
+rule "smoker and they're obese || overweight -> they should quit"
+dialect "mvel"
+when
+	Question(id == "smoke", answer == true);
+	sfact : SFact(id == "weightType", (answer == "overweight" || answer == "obese"));
+then
+	insertLogical(new OtherRecommendation("You should quit smoking because you are " + sfact.answer));
+end
+
+rule "smoker -> warn about smoking"
+dialect "mvel"
+when
+	Question(id == "smoke", answer == true);
+	//sfact : SFact(id == "weightType", answer == "normal");
+then
+	insertLogical(new OtherRecommendation(
+	"You should know that smoking is a serious health risk. " + 
+	"See <a href=\"http://www.cancer.gov/cancertopics/factsheet/Tobacco/cessation\">Harms of Smoking and Health Benefits of Quitting - National Cancer Institute</a>"));
+end

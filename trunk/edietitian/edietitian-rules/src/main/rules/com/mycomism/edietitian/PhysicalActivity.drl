@@ -1,0 +1,221 @@
+/**
+ * $Date: 2011-10-07 17:42:40 -0500 (Fri, 07 Oct 2011) $
+ * $Revision: 167 $
+ * $Author: robjackAdmin $
+ * $Id: PhysicalActivity.drl 167 2011-10-07 22:42:40Z robjackAdmin $
+ * 
+ * @author Robert Jackson
+ *
+ * © 2011 Robert Jackson
+ *
+ */
+
+package com.mycomism.edietitian
+
+import java.util.Calendar;
+
+
+import org.tohu.Group;
+import org.tohu.MultipleChoiceQuestion;
+import org.tohu.MultipleChoiceQuestion.PossibleAnswer;
+import org.tohu.Note;
+import org.tohu.Question;
+import org.tohu.Questionnaire;
+import org.tohu.Answer;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ArrayList;
+import java.math.BigDecimal;
+import com.mycomism.OtherRecommendation;
+import com.mycomism.ExerciseRecommendation;
+import com.mycomism.EatingRecommendation;
+import com.mycomism.SFact;
+import com.mycomism.Recommendation.Priority;
+import com.mycomism.Source;
+
+
+
+
+rule "everyone should get at least 2 hours of exercise per week"
+dialect "mvel"
+when
+	Question(id == "exercise", answer == false);
+then
+	insertLogical(new Note(
+		"exerciseNote", 
+		"You should exercise at least <b>2</b> hours per week."
+		)
+	);
+	insertLogical(
+		new ExerciseRecommendation(
+			"needToStartExercising",
+			Priority.HIGH,
+			"You should start an exercise regiment.",
+			new Source( 
+				"http://www.cdc.gov/physicalactivity/everyone/guidelines/adults.html",
+				"Physical Activity for Everyone: Guidelines: Adults"
+			)
+		)
+	);
+end
+
+
+
+/*
+if that exercise, then ask them more about their exercise habits
+*/
+rule "exercise questions"
+dialect "mvel"
+when
+	Question(id == "exercise", answer == true);
+then
+	Group group = new Group("exerciseQuestions");
+	group.setLabel("Tell me more about your exercise:");
+	group.setItems(
+		{
+		"run", // picture 
+
+		"exerciseDaysPerWeek", 
+		"exerciseMinutesPerSession", 
+		"exerciseType",
+		"bikeToWorkOrSchool"
+		
+		});
+	insertLogical(group);
+	
+	Note note = new Note("run");
+	note.setPresentationStyles({"image"});
+	note.setLabel("images/running.png");
+	insertLogical(note);
+
+
+	MultipleChoiceQuestion multi = new MultipleChoiceQuestion("exerciseDaysPerWeek");
+	multi.setAnswerType(Question.TYPE_NUMBER);
+	multi.setPreLabel("How many days per week do you go to exercise?");
+	multi.setPossibleAnswers({
+		new PossibleAnswer("",  "Days per week..."),
+	
+		new PossibleAnswer("1", "1"),
+		new PossibleAnswer("2", "2"),
+		new PossibleAnswer("3", "3"),
+		new PossibleAnswer("4", "4"),
+		new PossibleAnswer("5", "5"),
+		new PossibleAnswer("6", "6"),
+		new PossibleAnswer("7", "7"),
+		new PossibleAnswer("8", "7 + physical job or 2x training")
+	});
+	insertLogical(multi);
+
+	multi = new MultipleChoiceQuestion("exerciseMinutesPerSession");
+	multi.setAnswerType(Question.TYPE_NUMBER);
+	multi.setPreLabel("When you go to exercise, how many minutes do you stay for?");
+	multi.setPossibleAnswers({
+		new PossibleAnswer("",  "Minutes per session..."),
+		
+		new PossibleAnswer("15",  "15 minutes"),
+		new PossibleAnswer("30",  "30 minutes"),
+		new PossibleAnswer("45",  "45 minutes"),
+		new PossibleAnswer("60",  "1 hour"),
+		new PossibleAnswer("75",  "1 hour, 15 minutes"),
+		new PossibleAnswer("90",  "1 hour, 30 minutes"),
+		new PossibleAnswer("105", "1 hour, 45 minutes"),
+		new PossibleAnswer("120", "2 hours"),
+		new PossibleAnswer("135", "2 hours+")
+	});
+	insertLogical(multi);
+	
+	multi = new MultipleChoiceQuestion("exerciseType");
+	multi.setAnswerType(Question.TYPE_TEXT);
+	multi.setPreLabel("When you exercise, do you typically:");
+	multi.setPossibleAnswers({
+		new PossibleAnswer("",  "Typical exercise..."),
+
+		new PossibleAnswer("run"      , "run"),
+		new PossibleAnswer("walk"     , "walk"),
+		new PossibleAnswer("weight"   , "weight train"),
+		new PossibleAnswer("swim"     , "swimming"),
+		new PossibleAnswer("triathlon", "triathlon training"),
+		new PossibleAnswer("yoga"     , "yoga"),
+	});
+	//multi.setPresentationStyles({"radio"});
+	insertLogical(multi);
+
+	Question question = new Question("bikeToWorkOrSchool");
+	question.setAnswerType(Question.TYPE_BOOLEAN);
+	question.setPreLabel("Do you bike or walk to work/school?");
+	question.setPresentationStyles({"radio"});
+	insertLogical(question);
+end
+
+rule "obese or overweight person that weight trains -> recommened cardio to burn more calories"
+when
+	Question(id == "exerciseType", $exerciseType : answer == "weight");
+	SFact(id == "weightType", (answer == "overweight" || answer == "obese"));
+	//SFact(id == "exerciseOutput", (answer == "little" || == "light" || == "moderate"));
+then
+	insertLogical(new ExerciseRecommendation(
+		"In place of weight lifting, you should try walking, jogging, or cycling for a few hours a week to " +
+		"burn more calories. (Source: )"
+		));
+end
+
+
+rule "underweight person that runs or walks -> recommened weight training to gain weight"
+when
+	Question(id == "exerciseType", $exerciseType : answer == "run" || == "walk");
+	SFact(id == "weightType", answer == "underweight");
+then
+	insertLogical(new ExerciseRecommendation(
+		"In place of walking or running, you could try weight lifting to gain weight. (Source: )"
+		));
+end
+
+
+
+
+/***********
+ONLY ASK THESE QUESTIONS TO OVERWEIGHT OR OBESE PEOPLE
+************/
+/*
+rule "need more exercise questions from overweight or obese persons"
+dialect "mvel"
+when
+	Question(id == "exercise", answer == true);
+	SFact(id == "weightType", (answer == "overweight" || answer == "obese"));
+then
+	Group group = new Group("moreExerciseQuestions");
+	group.setLabel("Tell me a little more about your exercise:");
+	group.setItems({
+		"moveAround10MinsPerHour",
+		"wearPedometer"
+	});
+	insertLogical(group);
+
+	Question question = new Question("moveAround10MinsPerHour");
+	question.setAnswerType(Question.TYPE_BOOLEAN);
+	question.setPreLabel("During your day, do you usually move around for ten minutes per hour?");
+	question.setPresentationStyles({"radio"});
+	insertLogical(question);
+
+	question = new Question("wearPedometer");
+	question.setAnswerType(Question.TYPE_BOOLEAN);
+	question.setPreLabel("Do you wear a pedometer?");
+	question.setPresentationStyles({"radio"});
+	insertLogical(question);
+	
+	
+end
+
+
+rule "obese or overweight person does wear pedometer -> recommened wear to count calories"
+when
+	Question(id == "wearPedometer", answer == false);
+	SFact(id == "weightType", (answer == "overweight" || answer == "obese"));
+then
+	insertLogical(new ExerciseRecommendation(
+		"You could try wearing a pedometer device to measure the amount of exercise obtained from " +
+		"walking each day. " + 
+		"<br>See: <a href=\"http://adisonline.com/sportsmedicine/Abstract/2009/39120/Why_Do_Pedometers_Work___A_Reflection_upon_the.2.aspx\">Why Do Pedometers Work?: A Reflection upon the Factors Related to Successfully Increasing Physical Activity</a>."
+		));
+end
+*/
