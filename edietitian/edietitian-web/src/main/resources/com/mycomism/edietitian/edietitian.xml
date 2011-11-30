@@ -1,0 +1,26 @@
+<change-set xmlns='http://drools.org/drools-5.0/change-set' xmlns:xs='http://www.w3.org/2001/XMLSchema-instance'
+  xs:schemaLocation='http://drools.org/drools-5.0/change-set drools-change-set-5.0.xsd'>
+  <add>
+    <resource type="DRL" source="classpath:org/tohu/Active.drl" />
+    <resource type="DRL" source="classpath:org/tohu/Changes.drl" />
+    <resource type="DRL" source="classpath:org/tohu/Item.drl" />
+    <resource type="DRL" source="classpath:org/tohu/Queries.drl" />
+    <resource type="DRL" source="classpath:org/tohu/Question.drl" />
+    <resource type="DRL" source="classpath:org/tohu/ReadOnly.drl" />
+    <resource type="DRL" source="classpath:com/mycomism/edietitian/Alcohol.drl" />
+    <resource type="DRL" source="classpath:com/mycomism/edietitian/StartQuestions.drl" />
+    <resource type="DRL" source="classpath:com/mycomism/edietitian/Eating.drl" />
+    <resource type="DRL" source="classpath:com/mycomism/edietitian/PhysicalActivity.drl" />
+    <resource type="DRL" source="classpath:com/mycomism/edietitian/Tobacco.drl" />
+    <resource type="DRL" source="classpath:com/mycomism/edietitian/ValidValues.drl" />
+    <resource type="DRL" source="classpath:com/mycomism/edietitian/SpecialIllness_Diabetes.drl" />
+    <resource type="DRL" source="classpath:com/mycomism/edietitian/SpecialIllness_FoodAllergies.drl" />
+    <resource type="DRL" source="classpath:com/mycomism/edietitian/SpecialIllness_Gout.drl" />
+    <resource type="DRL" source="classpath:com/mycomism/edietitian/SpecialIllness_HeartAttack.drl" />
+    <resource type="DRL" source="classpath:com/mycomism/edietitian/SpecialIllness_HighBloodPressure.drl" />
+    <resource type="DRL" source="classpath:com/mycomism/edietitian/SpecialIllness_HighCholesterol.drl" />
+    <resource type="DRL" source="classpath:com/mycomism/edietitian/SpecialIllness_Osteoporosis.drl" />
+    <resource type="DRL" source="classpath:com/mycomism/edietitian/SpecialIllness_Questions.drl" />
+    <resource type="DRL" source="classpath:com/mycomism/edietitian/BranchingRules.drl" />
+  </add>
+</change-set>

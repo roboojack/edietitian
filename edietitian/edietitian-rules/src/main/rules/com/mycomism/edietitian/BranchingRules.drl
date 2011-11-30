@@ -1,0 +1,89 @@
+/**
+ * $Date: 2011-09-22 13:50:44 -0500 (Thu, 22 Sep 2011) $
+ * $Revision: 155 $
+ * $Author: robjackAdmin $
+ * $Id: StartQuestions.drl 155 2011-09-22 18:50:44Z robjackAdmin $
+ * 
+ * @author Robert Jackson
+ *
+ * © 2011 Robert Jackson
+ *
+ */
+
+package com.mycomism.edietitian
+
+import java.util.Calendar;
+import org.tohu.Group;
+import org.tohu.MultipleChoiceQuestion;
+import org.tohu.MultipleChoiceQuestion.PossibleAnswer;
+import org.tohu.Note;
+import org.tohu.Question;
+import org.tohu.Questionnaire;
+import org.tohu.Answer;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ArrayList;
+import java.math.BigDecimal;
+import com.mycomism.OtherRecommendation;
+import com.mycomism.ExerciseRecommendation;
+import com.mycomism.EatingRecommendation;
+import com.mycomism.SFact;
+
+
+
+
+
+
+/*
+ * Rule that will "branch off" to another screen to ask questions about the user's exercise
+ * habits IF they answered 'yes' to the question.
+ */
+
+rule "answered yes to smoke -> show smoking questions NOW!"
+dialect "mvel"
+salience 100
+no-loop
+when
+	Answer(questionId == "smoke", value == "true");
+	questionnaire : Questionnaire(branched == false);
+then
+	questionnaire.navigationBranch({"smokingQuestions"}, "smokingQuestions");
+	update(questionnaire);
+end
+
+
+/*
+ * Rule that will "branch off" to another screen to ask questions about the user's drinking
+ * habits IF they answered 'yes' to the question.
+ */
+
+rule "answered yes to drink -> show drinking questions NOW!"
+dialect "mvel"
+salience 100
+no-loop
+when
+	Answer(questionId == "drink", value == "true");
+	questionnaire : Questionnaire(branched == false);
+then
+	questionnaire.navigationBranch({"drinkingQuestions"}, "drinkingQuestions");
+	update(questionnaire);
+end
+
+
+
+/*
+ * Rule that will "branch off" to another screen to ask questions about the user's exercise
+ * habits IF they answered 'yes' to the question.
+ */
+
+rule "answered yes to exercise -> show exercise questions NOW!"
+dialect "mvel"
+salience 100
+no-loop
+when
+	Answer(questionId == "exercise", value == "true");
+	questionnaire : Questionnaire(branched == false);
+then
+	questionnaire.navigationBranch({"exerciseQuestions"}, "exerciseQuestions");
+	update(questionnaire);
+end

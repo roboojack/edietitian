@@ -1,0 +1,14 @@
+
+
+
+<script type="text/javascript">
+					function on_navigation_click(divtoshow) {
+						document.getElementById('about').style.display = 'none';
+						document.getElementById('tutorial').style.display = 'none';
+						document.getElementById('documentation').style.display = 'none';
+						document.getElementById(divtoshow).style.display = 'block';
+					};
+				</script>
+<link rel="stylesheet" type="text/css" media="screen" href="css/oldStyle.css" />
+<script type="text/javascript" src="script/oldExtras.js"></script>
+				

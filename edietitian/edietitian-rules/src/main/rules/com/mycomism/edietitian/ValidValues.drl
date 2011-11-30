@@ -1,0 +1,105 @@
+/**
+ * $Date: 2011-09-23 10:52:04 -0500 (Fri, 23 Sep 2011) $
+ * $Revision: 159 $
+ * $Author: robjackAdmin $
+ * $Id: ValidValues.drl 159 2011-09-23 15:52:04Z robjackAdmin $
+ * 
+ * @author Robert Jackson
+ *
+ * © 2011 Robert Jackson
+ *
+ */
+
+package com.mycomism.edietitian
+
+
+
+import org.tohu.Group;
+import org.tohu.MultipleChoiceQuestion;
+import org.tohu.MultipleChoiceQuestion.PossibleAnswer;
+import org.tohu.Note;
+import org.tohu.Question;
+import org.tohu.Questionnaire;
+import org.tohu.Answer;
+import org.tohu.InvalidAnswer;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ArrayList;
+import java.math.BigDecimal;
+import com.mycomism.Recommendation;
+import com.mycomism.OtherRecommendation;
+import com.mycomism.ExerciseRecommendation;
+import com.mycomism.EatingRecommendation;
+import com.mycomism.SFact;
+import com.mycomism.drools.MyWorkingMemoryEventListener;
+import org.drools.event.rule.DebugWorkingMemoryEventListener;
+
+// setting this flag will make it so that the user cannot 
+// continue with the questionnaire until his errors have
+// been fixed or he has answered all mandatory queestions.
+rule "disallow invalid answers to continue in questionnaire"
+no-loop 
+when
+	questionnaire : Questionnaire();
+then
+	questionnaire.setEnableActionValidation(true);
+	update(questionnaire);
+end
+
+// This will log the working memory to STD:ERR in the console.
+// It's very useful to peak at the working memory state-by-state
+// so that you can see what's going on in memory.
+rule "start the Working Memory Event Listener"
+dialect "java" 
+then
+	System.out.println("*** STARTING WORKING MEMORY EVENT LISTENER" );
+	drools.getKnowledgeRuntime().addEventListener(new MyWorkingMemoryEventListener());
+end
+
+
+
+rule "only keep last instance of an EatinRecommendation"
+dialect "java" 
+when
+	// if there are two different recommendations which have the same id, remove more stale instance
+	$eRec1 : Recommendation( $id1 : id != null);
+	$eRec2 : Recommendation( this != $eRec1, id == $id1 ); 
+then
+	System.out.println("*** RETRACTING RECOMMENDATION: " + $eRec1);
+	retract($eRec1);		
+end
+
+rule "only keep last instance of an SFact"
+dialect "java" 
+when
+	// if there are two different facts which have the same id, remove more stale instance
+	$sfact1 : SFact( $id1 : id );
+	$sfact2 : SFact( this != $sfact1, id == $id1 ); 
+then
+	System.out.println("*** RETRACTING SFACT: " + $sfact1);
+	retract($sfact1);		
+end
+
+rule "5 < weight < 500 LBS"
+dialect "mvel" 
+when
+	Question($id : id == "weight",  answer < 5 || > 500);
+then
+	insertLogical(new InvalidAnswer($id, "Weight should be between 5-500 LBS"));		
+end
+
+rule "12 < height < 96 INCES"
+dialect "mvel" 
+when
+	Question($id : id == "height",  answer < 12 || > 96);
+then
+	insertLogical(new InvalidAnswer($id, "Height should be between 12-96 Inches"));		
+end
+
+rule "10 < age < 100 YEARS"
+dialect "mvel" 
+when
+	Question($id : id == "age",  answer < 10 || > 100);
+then
+	insertLogical(new InvalidAnswer($id, "Age should be between 10-100 Years"));		
+end

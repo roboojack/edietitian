@@ -1,0 +1,106 @@
+/**
+ * $Date: 2011-11-29 17:32:35 -0500 (Tue, 29 Nov 2011) $
+ * $Revision: 197 $
+ * $Author: robjackAdmin $
+ * $Id: SpecialIllness_Diabetes.drl 197 2011-11-29 22:32:35Z robjackAdmin $
+ * 
+ * @author Robert Jackson
+ *
+ * © 2011 Robert Jackson
+ *
+ */
+
+package com.mycomism.edietitian
+
+
+
+import org.tohu.Group;
+import org.tohu.MultipleChoiceQuestion;
+import org.tohu.MultipleChoiceQuestion.PossibleAnswer;
+import org.tohu.Note;
+import org.tohu.Question;
+import org.tohu.Questionnaire;
+import org.tohu.Answer;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ArrayList;
+import java.math.BigDecimal;
+import com.mycomism.OtherRecommendation;
+import com.mycomism.ExerciseRecommendation;
+import com.mycomism.EatingRecommendation;
+import com.mycomism.SFact;
+import com.mycomism.Recommendation.Priority;
+import com.mycomism.Source;
+
+
+
+
+
+rule "diabetes questions"
+dialect "mvel"
+when
+	Question(id == "diabetes", answer == true);
+then
+	Group group = new Group("diabetesQuestions");
+	group.setLabel("Tell me more about your diabetes:");
+	group.setItems({
+		"diabetesPic",
+		"diabetesType" 
+		});
+	insertLogical(group);
+
+	Note note = new Note("diabetesPic");
+	note.setPresentationStyles({"image"});
+	note.setLabel("images/diabetes.gif");
+	insertLogical(note);
+
+
+	MultipleChoiceQuestion multi = new MultipleChoiceQuestion("diabetesType");
+	multi.setAnswerType(Question.TYPE_TEXT);
+	multi.setPreLabel("Which type of diabetes do you have?");
+	multi.setPossibleAnswers({
+		new PossibleAnswer("",  "Diabetes Type..."),
+
+		new PossibleAnswer("type1",  "Type 1"),
+		new PossibleAnswer("type2",  "Type 2"),
+		new PossibleAnswer("gestational",  "Gestational"),
+	});
+	insertLogical(multi);
+
+end
+
+/*
+ type 2 diabetes 
+ 	-> 
+ 	monitoring blood sugar
+ 	modify meals to get a meal plan
+	get regular physical exercise
+
+*/
+rule "type 2 diabetes recommendations"
+dialect "mvel"
+when
+	Question(id == "diabetes", answer == true);
+	Question(id == "diabetesType", answer == "type2" || answer == "type1");
+	
+then
+	insertLogical(
+		new OtherRecommendation(
+			"diabetesRecommendations",
+			Priority.HIGH,
+			"According to the information you gave us, " + 
+			"you have <b>Diabetes</b>, because of this you must: " +
+			"<ul>" + 
+				"<li>Manage your blood sugar by checking it once or twice a day and modifying your meals, activity, or medications to keep your blood sugar levels in the right range.</li>" + 
+				"<li>Maintain a healthy weight and diet by working with a doctor, nurse, or dietitian to learn how much fat, protein, and carbohydrates you need in your diet. A registered dietitian can help you create a customized meal plan tailored to you.</li>" + 
+				"<li>Get regular physical exercise in which you heart beats faster and you breathe faster. This can help manage your weight and cardiovascular system.</li>" + 
+			"</ul>",
+			new Source(
+				"http://www.ncbi.nlm.nih.gov/pubmedhealth/PMH0001356/",
+				"Type 2 diabetes"
+			)	 
+		
+		)
+	);
+end
+

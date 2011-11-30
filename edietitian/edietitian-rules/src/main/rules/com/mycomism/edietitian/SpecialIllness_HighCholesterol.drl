@@ -1,0 +1,163 @@
+/**
+ * $Date: 2011-10-24 14:55:09 -0500 (Mon, 24 Oct 2011) $
+ * $Revision: 174 $
+ * $Author: robjackAdmin $
+ * $Id: SpecialIllness_HighCholesterol.drl 174 2011-10-24 19:55:09Z robjackAdmin $
+ * 
+ * @author Robert Jackson
+ *
+ * © 2011 Robert Jackson
+ *
+ */
+
+package com.mycomism.edietitian
+
+
+
+import org.tohu.Group;
+import org.tohu.MultipleChoiceQuestion;
+import org.tohu.MultipleChoiceQuestion.PossibleAnswer;
+import org.tohu.Note;
+import org.tohu.Question;
+import org.tohu.Questionnaire;
+import org.tohu.Answer;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ArrayList;
+import java.math.BigDecimal;
+import com.mycomism.OtherRecommendation;
+import com.mycomism.ExerciseRecommendation;
+import com.mycomism.EatingRecommendation;
+import com.mycomism.SFact;
+import com.mycomism.Recommendation.Priority;
+import com.mycomism.Source;
+
+
+
+
+rule "If the patient has High Cholesterol -> background information"
+dialect "mvel"
+no-loop
+when
+	Question(id == "highCholesterol", answer == true);
+then
+	insertLogical(
+		new OtherRecommendation(
+			"highCholesterolInfo",
+			Priority.HIGH,
+			"According to the information you gave us, " + 
+			"you have <b>High Cholesterol</b>. " + 
+			"Dietary cholesterol has been shown to raise blood LDL cholesterol levels in some " + 
+			"individuals. However, this effect is reduced when saturated fatty acid intake is " + 
+			"low, and the potential negative effects of dietary cholesterol are relatively " + 
+			"small compared to those of saturated and trans fatty acids. Moderate evidence " + 
+			"shows a relationship between higher intake of cholesterol and higher risk of " + 
+			"cardiovascular disease.",
+			new Source(
+				"http://www.cnpp.usda.gov/Publications/DietaryGuidelines/2010/PolicyDoc/PolicyDoc.pdf",
+				"Dietary Guidelines for Americans 2010. Page 27"	 
+			)
+		)
+	);
+	
+
+	Group group = new Group("highCholesterolQuestions");
+	group.setLabel("Please answer these questions about your <b>High Cholesterol</b>: ");
+	group.setItems({
+		"numEggsPerDay",
+		"useEggSubstitutes",
+	});
+	group.setPresentationStyles({"section"});
+	insertLogical(group);	
+	
+	
+	MultipleChoiceQuestion multi = new MultipleChoiceQuestion("numEggsPerDay");
+	multi.setAnswerType(Question.TYPE_NUMBER);
+	multi.setPreLabel("On a average day, how many eggs do you consume (including the yoke)?");
+	multi.setPossibleAnswers({
+		new PossibleAnswer("",  "Eggs Per Day..."),
+
+		new PossibleAnswer("1",  "<1"),
+		new PossibleAnswer("1",  "1"),
+		new PossibleAnswer("2",  "2"),
+		new PossibleAnswer("3",  "3"),
+		new PossibleAnswer("4",  "4"),
+		new PossibleAnswer("5",  "4+")
+	});
+	insertLogical(multi);
+		
+	Question question = new Question("useEggSubstitutes");
+	question.setAnswerType(Question.TYPE_BOOLEAN);
+	question.setPreLabel("Do you regularly use Egg Substitutes (examples include Egg Beaters or Egg Replacer)?");
+	//question.setPresentationStyles({"radio"});
+	insertLogical(question);
+	
+end
+
+
+rule "case: hc=1, #egg>1, esub={false,null} => recommend limit eggs or use egg substitute"
+dialect "mvel"
+no-loop
+when
+	Question(id == "highCholesterol", answered == true, answer == true)
+	Question(id == "numEggsPerDay", answered == true, answer > 1)
+	Question(id == "useEggSubstitutes", (answered == false || (answered == true && answer == false)) )
+then
+	insertLogical(
+		new EatingRecommendation(
+			"lowerEggConsumtion",
+			Priority.MEDIUM,
+			"Consuming more than 1 egg per day gives you well beyond your recommendaed daily limit of Cholesterol. " +
+			"However, if you enjoy cooking with eggs, there are many <b>Egg Substitutes</b> that are a healthier " +
+			"alternative. Two examples are " + 
+				"<a href=\"http://www.eggbeaters.com/\">Egg Beaters</a> and " +
+				"<a href=\"http://www.ener-g.com/egg-replacer.html\">Egg Replacer</a>. ",
+			new Source(
+				"http://www.cnpp.usda.gov/Publications/DietaryGuidelines/2010/PolicyDoc/PolicyDoc.pdf",
+				"Dietary Guidelines for Americans 2010. Page 27"	 
+			)
+		)
+	);
+end
+
+rule "case: hc=1, #egg>1, esub=true => recommend continue using egg substitute"
+dialect "mvel"
+no-loop
+when
+	Question(id == "highCholesterol", answered == true, answer == true)
+	Question(id == "useEggSubstitutes", (answered == true && answer == true))
+then
+	insertLogical(
+		new EatingRecommendation(
+			"continueUsingEggSubstitute",
+			Priority.LOW,
+			"It's good to hear you are using an egg substitute, your body's cardiovascular system thanks you! ",
+			new Source(
+				"http://www.cnpp.usda.gov/Publications/DietaryGuidelines/2010/PolicyDoc/PolicyDoc.pdf",
+				"Dietary Guidelines for Americans 2010. Page 27"	 
+			)
+		)
+	);
+end
+
+
+
+rule "recommend consume less than 300 mg per day of dietary cholesterol"
+dialect "mvel"
+no-loop
+when
+then
+	insertLogical(
+		new EatingRecommendation(
+			"cholesterolLimit",
+			Priority.MEDIUM,
+			"Consume less than 300 mg per day of dietary cholesterol, " + 
+			"and limit your intake of animal products: milk, cheese, butter, etc.",
+			new Source(
+				"http://www.cnpp.usda.gov/Publications/DietaryGuidelines/2010/PolicyDoc/PolicyDoc.pdf",
+				"Dietary Guidelines for Americans 2010. Page 21"	 
+			)
+		)
+	);
+end
+

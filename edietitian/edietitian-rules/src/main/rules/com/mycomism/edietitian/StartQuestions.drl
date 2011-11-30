@@ -1,0 +1,536 @@
+/**
+ * $Date: 2011-11-29 17:32:35 -0500 (Tue, 29 Nov 2011) $
+ * $Revision: 197 $
+ * $Author: robjackAdmin $
+ * $Id: StartQuestions.drl 197 2011-11-29 22:32:35Z robjackAdmin $
+ * 
+ * @author Robert Jackson
+ *
+ * © 2011 Robert Jackson
+ *
+ */
+
+package com.mycomism.edietitian
+
+import java.util.Calendar;
+
+
+import org.tohu.Group;
+import org.tohu.MultipleChoiceQuestion;
+import org.tohu.MultipleChoiceQuestion.PossibleAnswer;
+import org.tohu.Note;
+import org.tohu.Question;
+import org.tohu.Questionnaire;
+import org.tohu.Answer;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ArrayList;
+import java.math.BigDecimal;
+import com.mycomism.OtherRecommendation;
+import com.mycomism.ExerciseRecommendation;
+import com.mycomism.EatingRecommendation;
+import com.mycomism.SFact;
+import com.mycomism.Recommendation.Priority;
+import com.mycomism.Source;
+
+
+
+
+
+rule "sections"
+dialect "mvel"
+then
+	Questionnaire questionnaire = new Questionnaire("myQuestionnaire");
+	questionnaire.setLabel("eDietitian Session");
+	questionnaire.setItems(
+		{
+			"introductionScreen", 
+			"mainQuestions", 
+			"exerciseQuestions",
+			"moreExerciseQuestions",
+			"eatingQuestions",
+			"obeseEatingQuestions",
+			"smokingQuestions", 
+			"drinkingQuestions",
+			"specialIllnessQuestions",
+			"diabetesQuestions",
+			"highBloodPressureQuestions",
+			"highCholesterolQuestions",
+			"foodAllergyQuestions"
+						
+	});
+	questionnaire.setActiveItem("introductionScreen");
+	questionnaire.setCompletionAction("recommendations.do");
+	insertLogical(questionnaire);
+	
+	Group group = new Group("introductionScreen");
+	group.setLabel("Tell me about your physical characteristics: ");
+	group.setItems({
+		"pg1Progress", // progress bar
+		"scale", // scale icon
+		
+		"height", 
+		"weight",
+		"age",
+		"gender",
+		
+		// notes that go along with above items
+		"bmiNote",
+		"bmrNote",
+		"bmiGraph",
+		"requiredNote"
+	});
+	group.setPresentationStyles({"section"});
+	insertLogical(group);	
+	
+	
+	group = new Group("mainQuestions");
+	group.setLabel("Please answer the following questions:");
+	group.setItems({
+		"pg2Progress",
+		"exercise", 
+		"smoke", 
+		"drink",
+		
+		"exerciseNote"
+	});
+	insertLogical(group);	
+end
+
+rule "introductionScreen Active"
+dialect "mvel"
+when
+	Questionnaire(activeItem == "introductionScreen");
+then
+	note = new Note("pg1Progress");
+	note.setLabel("5%");
+	note.setPresentationStyles({"progress"});
+	insertLogical(note);
+	
+	note = new Note("scale");
+	note.setPresentationStyles({"image"});
+	note.setLabel("images/scale.png");
+	insertLogical(note);
+end
+
+rule "mainQuestions Active"
+dialect "mvel"
+when
+	Questionnaire(activeItem == "mainQuestions");
+then
+	note = new Note("pg2Progress");
+	note.setLabel("15%");
+	note.setPresentationStyles({"progress"});
+	insertLogical(note);
+end
+
+
+
+rule "static"
+dialect "mvel" 
+then		
+	MultipleChoiceQuestion multi = new MultipleChoiceQuestion("weight");
+	multi.setAnswerType(Question.TYPE_DECIMAL);
+	multi.setPreLabel("How much do you weigh?");
+	multi.setPossibleAnswers({
+		new PossibleAnswer("",  "Weight..."),
+
+		new PossibleAnswer("80.0",  " 80lbs /  36.3kg"),
+		new PossibleAnswer("90.0",  " 90lbs /  40.8kg"),
+		new PossibleAnswer("100.0", "100lbs /  45.4kg"),
+		new PossibleAnswer("110.0", "110lbs /  49.9kg"),
+		new PossibleAnswer("120.0", "120lbs /  54.4kg"),
+		new PossibleAnswer("130.0", "130lbs /  59.0kg"),
+		new PossibleAnswer("140.0", "140lbs /  63.5kg"),
+		new PossibleAnswer("150.0", "150lbs /  68.0kg"),
+		new PossibleAnswer("160.0", "160lbs /  75.6kg"),
+		new PossibleAnswer("170.0", "170lbs /  77.1kg"),
+		new PossibleAnswer("180.0", "180lbs /  81.6kg"),
+		new PossibleAnswer("190.0", "190lbs /  86.2kg"),
+		new PossibleAnswer("200.0", "200lbs /  90.7kg"),
+		new PossibleAnswer("210.0", "210lbs /  95.3kg"),
+		new PossibleAnswer("220.0", "220lbs /  99.8kg"),
+		new PossibleAnswer("230.0", "230lbs / 104.3kg"),
+		new PossibleAnswer("240.0", "240lbs / 108.9kg"),
+		new PossibleAnswer("250.0", "250lbs / 113.4kg"),
+		new PossibleAnswer("260.0", "260lbs / 117.9kg"),
+		new PossibleAnswer("270.0", "270lbs / 122.5kg"),
+		new PossibleAnswer("280.0", "280lbs / 127.0kg"),
+		new PossibleAnswer("290.0", "290lbs / 131.5kg"),
+		new PossibleAnswer("300.0", "300lbs / 136.1kg"),
+		new PossibleAnswer("310.0", "310lbs / 140.6kg"),
+		new PossibleAnswer("320.0", "320lbs / 145.2kg"),
+		new PossibleAnswer("330.0", "330lbs / 149.7kg"),
+		new PossibleAnswer("340.0", "340lbs / 154.2kg"),
+		new PossibleAnswer("350.0", "350lbs / 158.8kg")
+	});
+	multi.setRequired(true);
+	//multi.setPresentationStyles({"radio"});
+	insertLogical(multi);
+
+
+
+	multi = new MultipleChoiceQuestion("height");
+	multi.setAnswerType(Question.TYPE_DECIMAL);
+	multi.setPreLabel("How tall are you?");
+	multi.setPossibleAnswers({
+		new PossibleAnswer("",  "Height..."),
+		
+		new PossibleAnswer("48.0", "4' 0'' / 122cm"),
+		new PossibleAnswer("49.0", "4' 1'' / 124cm"),
+		new PossibleAnswer("50.0", "4' 2'' / 127cm"),
+		new PossibleAnswer("51.0", "4' 3'' / 130cm"),
+		new PossibleAnswer("52.0", "4' 4'' / 132cm"),
+		new PossibleAnswer("53.0", "4' 5'' / 135cm"),
+		new PossibleAnswer("54.0", "4' 6'' / 137cm"),
+		new PossibleAnswer("55.0", "4' 7'' / 140cm"),
+		new PossibleAnswer("56.0", "4' 8'' / 142cm"),
+		new PossibleAnswer("57.0", "4' 9'' / 145cm"),
+		new PossibleAnswer("58.0", "4'10'' / 147cm"),
+		new PossibleAnswer("59.0", "4'11'' / 150cm"),
+		
+		new PossibleAnswer("60.0", "5' 0'' / 152cm"),
+		new PossibleAnswer("61.0", "5' 1'' / 155cm"),
+		new PossibleAnswer("62.0", "5' 2'' / 158cm"),
+		new PossibleAnswer("63.0", "5' 3'' / 160cm"),
+		new PossibleAnswer("64.0", "5' 4'' / 163cm"),
+		new PossibleAnswer("65.0", "5' 5'' / 165cm"),
+		new PossibleAnswer("66.0", "5' 6'' / 168cm"),
+		new PossibleAnswer("67.0", "5' 7'' / 170cm"),
+		new PossibleAnswer("68.0", "5' 8'' / 173cm"),
+		new PossibleAnswer("69.0", "5' 9'' / 175cm"),
+		new PossibleAnswer("70.0", "5'10'' / 178cm"),
+		new PossibleAnswer("71.0", "5'11'' / 180cm"),
+		
+		new PossibleAnswer("72.0", "6' 0'' / 183cm"),
+		new PossibleAnswer("73.0", "6' 1'' / 185cm"),
+		new PossibleAnswer("74.0", "6' 2'' / 188cm"),
+		new PossibleAnswer("75.0", "6' 3'' / 191cm"),
+		new PossibleAnswer("76.0", "6' 4'' / 193cm"),
+		new PossibleAnswer("77.0", "6' 5'' / 196cm"),
+		new PossibleAnswer("78.0", "6' 6'' / 198cm"),
+		new PossibleAnswer("79.0", "6' 7'' / 201cm"),
+		new PossibleAnswer("80.0", "6' 8'' / 203cm"),
+		new PossibleAnswer("81.0", "6' 9'' / 206cm"),
+		new PossibleAnswer("82.0", "6'10'' / 208cm"),
+		new PossibleAnswer("83.0", "6'11'' / 211cm"),
+		
+		new PossibleAnswer("84.0", "7'00'' / 213cm")
+
+	});
+	multi.setRequired(true);
+	//multi.setPresentationStyles({"radio"});
+	insertLogical(multi);
+
+	multi = new MultipleChoiceQuestion("age");
+	multi.setAnswerType(Question.TYPE_NUMBER);
+	multi.setPreLabel("Age");
+	multi.setPossibleAnswers({
+		new PossibleAnswer("",  "Age..."),
+		
+		new PossibleAnswer("10", "10s"),
+		new PossibleAnswer("20", "20s"),
+		new PossibleAnswer("30", "30s"),
+		new PossibleAnswer("40", "40s"),
+		new PossibleAnswer("50", "50s"),
+		new PossibleAnswer("60", "60s"),
+		new PossibleAnswer("70", "70s"),
+		new PossibleAnswer("80", "80s"),
+		new PossibleAnswer("90", "90s"),
+		new PossibleAnswer("100", "100+")
+	});
+	multi.setRequired(true);
+	insertLogical(multi);
+	
+	multi = new MultipleChoiceQuestion("gender");
+	multi.setAnswerType(Question.TYPE_TEXT);
+	multi.setPreLabel("Gender");
+	multi.setPossibleAnswers({
+		new PossibleAnswer("male", "male"),
+		new PossibleAnswer("female", "female")
+	});
+	multi.setRequired(true);
+	multi.setPresentationStyles({"radio"});
+	insertLogical(multi);
+
+	// note about required questions	
+	insertLogical(new Note(
+		"requiredNote", 
+		"Please note that questions <font color=\"red\">surrounded in red</font> are required questions.")
+	);		
+	
+end
+
+
+
+
+rule "mainQuestions level questions"
+dialect "mvel" 
+then		
+	Question question = new Question("exercise");
+	question.setAnswerType(Question.TYPE_BOOLEAN);
+	question.setPreLabel("Do you exercise?");
+	question.setPresentationStyles({"radio"});
+	insertLogical(question);
+
+	question = new Question("smoke");
+	question.setAnswerType(Question.TYPE_BOOLEAN);
+	question.setPreLabel("Do you smoke?");
+	question.setPresentationStyles({"radio"});
+	insertLogical(question);
+
+	question = new Question("drink");
+	question.setAnswerType(Question.TYPE_BOOLEAN);
+	question.setPreLabel("Do you drink?");
+	question.setPresentationStyles({"radio"});
+	insertLogical(question);
+end
+
+
+
+
+
+rule "exist(weight, height) -> set bmi and weightType"
+no-loop 
+dialect "java"
+when
+	Question(id == "weight", $weight : decimalAnswer > 1.0);
+	Question(id == "height", $height : decimalAnswer > 1.0);
+then
+	System.out.println("*** CALCULATING BMI AND WEIGHTTYPE");
+
+	double dWeight = Double.parseDouble($weight.toString());
+	double dHeight = Double.parseDouble($height.toString()); 
+	double bmi = (dWeight * 703.0) / (dHeight * dHeight);
+	bmi = Math.round(bmi * 10.0) / 10.0;		// rounding to 1 decimal place
+	
+	String weightType;
+	if(bmi > 30)
+		weightType="obese";
+	else if (bmi >= 25)
+		weightType="overweight";
+	else if (bmi >= 18.5)
+		weightType="normal";
+	else 
+		weightType="underweight";
+		
+	BigDecimal bmiBd = new BigDecimal(bmi);
+	
+	insertLogical(new SFact("bmi", SFact.TYPE_DECIMAL, bmiBd));
+	
+	insertLogical(new SFact("weightType", SFact.TYPE_TEXT, weightType));
+			
+end
+
+
+rule "if exist(bmi, weightType, bmrAtRest) -> display {bmi,weightType,bmrAtRest}"
+no-loop 
+dialect "mvel"
+when
+	SFact(id == "bmi", $bmi : decimalAnswer);
+	SFact(id == "weightType", $weightType : textAnswer );
+	SFact(id == "bmrAtRest", $bmr : decimalAnswer);
+then
+	System.out.println("*** BMI NOTE INSERTED");
+	Note note = new Note("bmiNote", 
+		"Your Body Mass Index (an indirect measure of body fat) is " + 
+		Math.round(Double.parseDouble($bmi.toString()) * 10.0) / 10.0 + 
+		", which means you are " + $weightType + "."
+	);
+	insertLogical(note);
+	
+	note = new Note("bmiGraph");
+	note.setPresentationStyles({"image"});
+	note.setLabel("images/bmiGraph.png");
+	insertLogical(note);
+	
+//	note = new Note("bmrNote", 
+//		"Your BMR (Basal Metabolic Rate - the number of calories per day your body uses at rest) is " + 
+//		Math.round(Double.parseDouble($bmr.toString()) * 10.0) / 10.0
+//	);
+//	insertLogical(note);
+end
+
+
+
+
+
+
+
+
+
+
+
+
+/* 
+Mifflin et al Method: http://www.ajcn.org/cgi/content/abstract/51/2/241
+
+	For females,
+		REE = 9.99 X weight(kg) + 6.25 X height(cm) - 4.92 x age(year) - 161
+	For males,
+		REE = 9.99 X weight(kg) + 6.25 X height(cm) - 4.92 X age(year) + 5
+		
+	=> (to imperial units)
+	
+	For females,
+		REE = 9.99 X weight(lbs) + 6.25 X height(inches) - 4.92 x age(year) - 161
+		         2.2046                 0.3937
+		    = 4.5314*lbs           15.8750*in            - 4.92 x age(year) - 161
+	For males,
+		REE = 9.99 X weight(lbs) + 6.25 X height(inches) - 4.92 X age(year) + 5
+		    = 4.5314*lbs           15.8750*in            - 4.92 x age(year) + 5	
+
+
+Harris Benedict Equation Multipliers: http://www.bmi-calculator.net/bmr-calculator/harris-benedict-equation/
+*/
+rule "calculate Basal Metabolic Rate (BMR) and exerciseOutput"
+no-loop 
+dialect "java"
+when
+	//SFact(id == "bmi");
+	Question(id == "weight", $weight : decimalAnswer > 0);
+	Question(id == "height", $height : decimalAnswer > 0);
+	Question(id == "exercise", booleanAnswer == true);
+	Question(id == "exerciseDaysPerWeek", $exerciseDaysPerWeek : numberAnswer > 0);
+	Question(id == "age", $age : numberAnswer > 0);
+	Question(id == "gender", $gender : textAnswer == "male" || == "female" );		
+then
+	System.out.println("*** {BMR, ExerciseOutput} calculated with " + kcontext.getRule().getName());
+	
+	double dWeight = Double.parseDouble($weight.toString());
+	double dHeight = Double.parseDouble($height.toString()); 
+	double bmr=0;
+	// if the user us a female use this equation
+	if($gender.toString().contains("female")){
+		bmr=(4.5314 * dWeight) + (15.8750 * dHeight) - (4.92 * $age) - 161;
+	}
+	// else the user is male, so use this equation
+	else { 
+		bmr=(4.5314 * dWeight) + (15.8750 * dHeight) - (4.92 * $age) + 5;
+	}
+		
+	double bmrAtRest = bmr;
+	
+	String exerciseOutput = new String();
+	if($exerciseDaysPerWeek > 7){
+		bmr*=1.9;
+		exerciseOutput="veryHeavy";
+	}
+	else if($exerciseDaysPerWeek >= 6){
+		bmr*=1.725;
+		exerciseOutput="heavy";
+	}
+	else if($exerciseDaysPerWeek >= 3){
+		bmr*=1.55;
+		exerciseOutput="moderate";
+	}
+	else if($exerciseDaysPerWeek >= 1){
+		bmr*=1.375;
+		exerciseOutput="light";
+	}
+	else{
+		bmr*=1.2;
+		exerciseOutput="little";
+	}
+	bmr=Math.round(bmr);		// rounding up
+
+	insertLogical(new SFact("bmrAtRest", SFact.TYPE_DECIMAL, new BigDecimal(bmrAtRest)));
+	insertLogical(new SFact("bmr", SFact.TYPE_DECIMAL, new BigDecimal(bmr)));
+	insertLogical(new SFact("exerciseOutput", SFact.TYPE_TEXT, exerciseOutput));
+	insertLogical(
+		new EatingRecommendation(
+			"caloriesPerDay",
+			Priority.HIGH,		
+			"You should consume " + bmr + " calories per day because your exercise output is " + exerciseOutput + ". ",
+			new Source(
+				"http://www.ajcn.org/content/51/2/241.abstract",
+				"A new predictive equation for resting energy expenditure in healthy individuals"
+			)
+		)
+	);
+end
+
+
+rule "set Basal Metabolic Rate for person that doesn't exercise OR didn't answer question"
+no-loop 
+dialect "java"
+when
+
+	Question(id == "weight", $weight : decimalAnswer > 1);
+	Question(id == "height", $height : decimalAnswer > 1);
+	Question(id == "exercise", (answer == false || answered == false));
+	Question(id == "age", $age : numberAnswer > 1 );
+	Question(id == "gender", $gender : textAnswer == "male" || == "female" );		
+then
+	
+	double dWeight = Double.parseDouble($weight.toString());
+	double dHeight = Double.parseDouble($height.toString()); 
+	double bmr=0;
+	// if the user us a female use this equation
+	if($gender.toString().contains("female")){
+		bmr=(4.5314 * dWeight) + (15.8750 * dHeight) - (4.92 * $age) - 161;
+	}
+	// else the user is male, so use this equation
+	else { 
+		bmr=(4.5314 * dWeight) + (15.8750 * dHeight) - (4.92 * $age) + 5;
+	}
+
+	double bmrAtRest = bmr;
+	
+	String exerciseOutput = new String();
+
+	bmr*=1.2;
+	bmr=Math.round(bmr);		// rounding up
+	exerciseOutput="little";
+	
+	insertLogical(new SFact("bmrAtRest", SFact.TYPE_DECIMAL, new BigDecimal(bmrAtRest)));
+	insertLogical(new SFact("bmr", SFact.TYPE_DECIMAL, new BigDecimal(bmr)));
+	insertLogical(new SFact("exerciseOutput", SFact.TYPE_TEXT, exerciseOutput));
+	insertLogical(
+		new EatingRecommendation(
+			"caloriesPerDay",
+			Priority.HIGH,			 
+			"You should consume " + bmr + " calories per day because your exercise output is " + exerciseOutput + ". ",
+			new Source(
+				"http://www.ajcn.org/content/51/2/241.abstract",
+				"A new predictive equation for resting energy expenditure in healthy individuals"
+			)
+		)
+	);
+
+end
+
+rule "if patient is overweight of obese -> recommend weight loss"
+dialect "java"
+when
+	SFact(id == "bmi", $bmi : decimalAnswer);
+	$sfact : SFact( id == "weightType", (answer in ("overweight", "obese")) )
+then
+	double bmi=Double.parseDouble($bmi.toString());
+
+	insertLogical(
+		new ExerciseRecommendation(
+			"recommendWeightLossProgram",
+			Priority.HIGH,			
+			"Because your BMI is <b>" + bmi + "</b>" + ", you are diagnosed as <b>" + $sfact.getAnswer() + 
+			"</b>. We recommend you start a <b>weight loss program</b>. " + 
+			"Evidence shows that people who lose weight gradually and steadily (about 1 to 2 pounds per week) " +
+			"are more successful at keeping weight off. Healthy weight loss isn't just about a \"diet\" or " + 
+			"\"program\". It's about an ongoing lifestyle that includes long-term changes in daily eating and " +
+			"exercise habits. To lose weight, you must use up more calories than you take in. Since one pound " +
+			"equals 3,500 calories, you need to reduce your caloric intake by 500 to 1000 calories per day to lose " +
+			"about 1 to 2 pounds per week. ",
+			new Source(
+				"http://www.cdc.gov/healthyweight/losing_weight/index.html",
+				"Healthy Weight: Losing Weight"
+			)
+		)
+	
+	);				
+end
+
+
+
+
+
+

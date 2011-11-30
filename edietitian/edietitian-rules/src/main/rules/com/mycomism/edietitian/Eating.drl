@@ -1,0 +1,268 @@
+/**
+ * $Date: 2011-11-29 17:32:35 -0500 (Tue, 29 Nov 2011) $
+ * $Revision: 197 $
+ * $Author: robjackAdmin $
+ * $Id: Eating.drl 197 2011-11-29 22:32:35Z robjackAdmin $
+ * 
+ * @author Robert Jackson
+ *
+ * © 2011 Robert Jackson
+ *
+ */
+
+package com.mycomism.edietitian
+
+import java.util.Calendar;
+
+
+import org.tohu.Group;
+import org.tohu.MultipleChoiceQuestion;
+import org.tohu.MultipleChoiceQuestion.PossibleAnswer;
+import org.tohu.Note;
+import org.tohu.Question;
+import org.tohu.Questionnaire;
+import org.tohu.Answer;
+import com.mycomism.EatingRecommendation;
+import com.mycomism.SFact;
+import com.mycomism.Recommendation.Priority;
+import com.mycomism.Source;
+
+
+/*
+THESE QUESTIONS WILL BE ASKED TO EVERYONE NO MATTER THEIR WEIGHT TYPE
+*/
+rule "insert group of eating questions that needs to be obtained from *ALL* people"
+dialect "mvel"
+then
+	Group group = new Group("eatingQuestions");
+	group.setLabel("Tell me more about your eating habits: ");
+	group.setItems({
+		"waterPic",
+		"waterConsumption",
+		 
+		"eatBreakfastLunchDinner",
+		
+		"saladPic",
+		"numFruitAndVegServingsPerDay",
+		
+		"friedFoodPic",
+		"eatFriedFoodOften" 
+	});
+	group.setPresentationStyles({"section"});
+	insertLogical(group);
+	
+	Note note = new Note("waterPic");
+	note.setPresentationStyles({"image"});
+	note.setLabel("images/water.jpg");
+	insertLogical(note);
+	
+	MultipleChoiceQuestion multi = new MultipleChoiceQuestion("waterConsumption");
+	multi.setAnswerType(Question.TYPE_DECIMAL);
+	multi.setPreLabel("How many liters of water do you drink a day?");
+	multi.setPossibleAnswers({
+		new PossibleAnswer("",  "Liters Per Day..."),
+
+		new PossibleAnswer("0.5", "<1"),
+		new PossibleAnswer("1",  "1"),
+		new PossibleAnswer("2",  "2"),
+		new PossibleAnswer("3",  "3"),
+		new PossibleAnswer("4",  "4"),
+		new PossibleAnswer("5",  "5+")
+	});
+	insertLogical(multi);
+	
+
+	Question question = new Question("eatBreakfastLunchDinner");
+	question.setAnswerType(Question.TYPE_BOOLEAN);
+	question.setPresentationStyles({"radio"});
+	question.setPreLabel("Do you eat breakfast, lunch, and dinner");
+	insertLogical(question);	
+
+
+	note = new Note("saladPic");
+	note.setPresentationStyles({"image"});
+	note.setLabel("images/salad.jpg");
+	insertLogical(note);
+
+	multi = new MultipleChoiceQuestion("numFruitAndVegServingsPerDay");
+	multi.setAnswerType(Question.TYPE_NUMBER);
+	multi.setPreLabel("How many servings of fruits and vegitables do you eat per day?");
+	multi.setPossibleAnswers({
+		new PossibleAnswer("",  "Servings Per Day..."),
+
+		new PossibleAnswer("1",  "1"),
+		new PossibleAnswer("2",  "2"),
+		new PossibleAnswer("3",  "3"),
+		new PossibleAnswer("4",  "4"),
+		new PossibleAnswer("5",  "5+")
+	});
+	insertLogical(multi);
+	
+	note = new Note("friedFoodPic");
+	note.setPresentationStyles({"image"});
+	note.setLabel("images/friedFood.jpg");
+	insertLogical(note);
+		
+	question = new Question("eatFriedFoodOften");
+	question.setAnswerType(Question.TYPE_BOOLEAN);
+	question.setPresentationStyles({"radio"});
+	question.setPreLabel("Do you eat fried food often?");
+	insertLogical(question);	
+	
+end
+
+rule "don't drink enough water -> recommend drinking more water throughout the day"
+when
+	Question( id=="waterConsumption", answer < 2 )
+then
+	insertLogical(
+		new EatingRecommendation(
+			"drinkMoreWater",
+			Priority.HIGH,
+			"As a general rule everyone should consume <u>at least</u> 2 liters of water per day.",
+			new Source(
+				"http://www.mayoclinic.com/health/water/NU00283",
+				"Water: How much should you drink every day?"
+			)
+		)
+	);
+end
+
+rule "don't eat breakfast, lunch and dinner -> recommend eating "
+when
+	Question( id=="eatBreakfastLunchDinner", answer==false )
+then
+	insertLogical(
+		new EatingRecommendation(
+			"You should eat at least 3 times throughout the day. These are typicaly " + 
+			"Breakfast, Lunch, and Dinner. However, it's better to eat smaller main meals " + 
+			"with snacks in between, such as: Breakfast, Snack, Lunch, Snack, Dinner. "
+		)
+	);
+end
+
+rule "doesn't eat at least 5 fruits and vegs / per -> recommending eating more fruits and vegitables"
+when
+	Question( id=="numFruitAndVegServingsPerDay", answer < 5 )
+then
+	insertLogical(
+		new EatingRecommendation(
+			"You should eat at least 5 servings of fruits or vegitables per day, " + 
+			"each on having a different color. "
+		)
+	);
+end
+
+rule "eat fried foods often -> recommend eating less fried foods"
+when
+	Question( id=="eatFriedFoodOften", answer == true )
+then
+	insertLogical(
+		new EatingRecommendation(
+			"tooMuchFriedFoods",
+			Priority.MEDIUM,
+			"Try to limit your intake of fried fast foods.",
+			new Source(
+				"http://www.sciencemag.org/content/280/5368/1371.full.pdf",
+				"Environmental Contributions to the Obesity Epidemic"
+			)
+		)
+	);
+end
+
+
+/*
+THESE QUESTIONS WILL BE ASKED TO *OBESE, OVERWEIGHT, AND UNDERWEIGHT* PEOPLE
+*/
+
+rule "insert group of eating questions that needs to be obtained from non-normal weightType people"
+dialect "mvel"
+when
+    SFact(id == "weightType", 
+    	(answer == "obese" || answer == "overweight" || answer == "underweight") 
+    )
+then
+	Group group = new Group("obeseEatingQuestions");
+	group.setLabel("Tell me more about your eating habits: ");
+	group.setItems({
+		"keepJournal",
+		"eatMediumPortions",
+		"eatOnlyAtTable",
+		"drinkWaterWhileEating",
+		"chew20To25Times"
+	});
+	group.setPresentationStyles({"section"});
+	insertLogical(group);	
+
+	Question question = new Question("keepJournal");
+	question.setAnswerType(Question.TYPE_BOOLEAN);
+	question.setPresentationStyles({"radio"});
+	question.setPreLabel("Do you keep a food/calorie journal?");
+	insertLogical(question);
+	question = new Question("eatMediumPortions");
+	question.setAnswerType(Question.TYPE_BOOLEAN);
+	question.setPresentationStyles({"radio"});
+	question.setPreLabel("Do you eat medium sized servings?");
+	insertLogical(question);
+	question = new Question("eatOnlyAtTable");
+	question.setAnswerType(Question.TYPE_BOOLEAN);
+	question.setPresentationStyles({"radio"});
+	question.setPreLabel("Do you eat while sitting at a table?");
+	insertLogical(question);
+	question = new Question("drinkWaterWhileEating");
+	question.setAnswerType(Question.TYPE_BOOLEAN);
+	question.setPresentationStyles({"radio"});
+	question.setPreLabel("Do you drink water while you are eating?");
+	insertLogical(question);
+	question = new Question("chew20To25Times");
+	question.setAnswerType(Question.TYPE_BOOLEAN);
+	question.setPresentationStyles({"radio"});
+	question.setPreLabel("Do you chew 20-25 times?");
+	insertLogical(question);
+
+end
+
+rule "no keep journal -> recommend keep journal"
+when
+	Question( id == "keepJournal", (answered == false || answer==false));
+then
+    insertLogical(new EatingRecommendation(
+    "You should keep a journal of what you eat and how many calories your consume."));
+end
+
+rule "eatMediumPortions -> recommend eatMediumPortions"
+when
+	Question( id == "eatMediumPortions", answer==false );
+then
+    insertLogical(new EatingRecommendation(
+    "You should measure your portions of food."));
+end
+
+rule "eatOnlyAtTable -> recommend eatOnlyAtTable"
+when
+	Question( id == "eatOnlyAtTable", answer==false );
+then
+    insertLogical(new EatingRecommendation(
+    "You should eat only at a table, NOT over a sink or holding your plate."));
+end
+
+rule "drinkWaterWhileEating -> recommend drinkWaterWhileEating"
+when
+	Question( id == "drinkWaterWhileEating", answer==false );
+then
+    insertLogical(
+    	new EatingRecommendation(
+    		"You should drink a whole glass of water before every meal, " + 
+    		"a whole glass between helpings, and a whole glass 1 hour after a meal."
+    	)
+    );
+end
+
+rule "chew20To25Times -> recommend chew20To25Times"
+when
+	Question( id == "chew20To25Times", answer==false );
+then
+    insertLogical(new EatingRecommendation(
+    "You should chew every bite 20-25 times."));
+end
+

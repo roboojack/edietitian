@@ -1,0 +1,140 @@
+/**
+ * $Date: 2011-11-29 17:32:35 -0500 (Tue, 29 Nov 2011) $
+ * $Revision: 197 $
+ * $Author: robjackAdmin $
+ * $Id: Alcohol.drl 197 2011-11-29 22:32:35Z robjackAdmin $
+ * 
+ * @author Robert Jackson
+ *
+ * © 2011 Robert Jackson
+ *
+ */
+
+package com.mycomism.edietitian
+
+import java.util.Calendar;
+
+
+import org.tohu.Group;
+import org.tohu.MultipleChoiceQuestion;
+import org.tohu.MultipleChoiceQuestion.PossibleAnswer;
+import org.tohu.Note;
+import org.tohu.Question;
+import org.tohu.Questionnaire;
+import org.tohu.Answer;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ArrayList;
+import java.math.BigDecimal;
+import com.mycomism.OtherRecommendation;
+import com.mycomism.ExerciseRecommendation;
+import com.mycomism.EatingRecommendation;
+import com.mycomism.SFact;
+import com.mycomism.Recommendation.Priority;
+import com.mycomism.Source;
+
+
+
+
+
+rule "drinking questions"
+dialect "mvel"
+when
+	Question(id == "drink", answer == true);
+then
+	Group group = new Group("drinkingQuestions");
+	group.setLabel("Tell me more about your drinking:");
+	group.setItems({"alcoholPic", "drinksPerWeek", "alcoholismHistory"});
+	insertLogical(group);
+
+	Note note = new Note("alcoholPic");
+	note.setPresentationStyles({"image"});
+	note.setLabel("images/alcohol.jpg");
+	insertLogical(note);
+
+	MultipleChoiceQuestion multi = new MultipleChoiceQuestion("drinksPerWeek");
+	multi.setAnswerType(Question.TYPE_NUMBER);
+	multi.setPreLabel("How many standard drinks do you have per week?");
+	multi.setPossibleAnswers({
+		new PossibleAnswer("",  "Drinks Per Week..."),
+
+		new PossibleAnswer("1",  "1"),
+		new PossibleAnswer("2",  "2"),
+		new PossibleAnswer("3",  "3"),
+		new PossibleAnswer("4",  "4"),
+		new PossibleAnswer("5",  "5"),
+		new PossibleAnswer("10",  "10"),
+		new PossibleAnswer("15",  "15"),
+		new PossibleAnswer("20",  "20"),
+		new PossibleAnswer("25",  "20+")
+	});
+	insertLogical(multi);
+
+	Question question = new Question("alcoholismHistory");
+	question.setAnswerType(Question.TYPE_BOOLEAN);
+	question.setPreLabel("Is there a family history of alcoholism?");
+	question.setPresentationStyles({"radio"});
+	insertLogical(question);
+end
+
+
+/*
+  "If alcohol is consumed, it should be consumed in moderation—up to one drink
+  per day for women and two drinks per day for men—and only by adults of legal
+  drinking age." Dietary Guidelines for Americans, 2010. Page x.
+*/
+rule "heavy drinker and they're obese || overweight -> they should quit"
+dialect "mvel"
+when
+	Question(id == "drinksPerWeek", $drinksPerWeek : answer > 7);	
+	SFact(id == "weightType", $weightType : answer, (answer == "overweight" || answer == "obese"));
+then
+	insertLogical(
+		new EatingRecommendation(
+			"You should cut back on drinking because you are <b>" + $weightType + "</b>. " +
+			"By drinking <b>" + $drinksPerWeek.toString() + "</b> drinks per week, you are adding approximately <b>" + 
+			($drinksPerWeek * 100) + " to " + ($drinksPerWeek * 200) + "</b> calories per week to your " +
+			"caloric intake."   
+		)
+	);
+end
+
+rule "heavy drinker and male -> they should cut back"
+dialect "mvel"
+when
+	Question(id == "gender", answer == "male");	
+	Question(id == "drinksPerWeek", $drinksPerWeek : answer > 14);	
+then
+	insertLogical(
+		new OtherRecommendation(
+			"heavyDrinking",
+			Priority.HIGH,
+			"You level of drinking is heavy. You shouldn't drink more that 4 drinks on any day or more than 14 per week. ",
+			new Source(
+				"http://www.cnpp.usda.gov/Publications/DietaryGuidelines/2010/PolicyDoc/PolicyDoc.pdf",
+				"Dietary Guidelines for Americans 2010. Page 31."
+			)	 
+		)
+	);
+end
+
+rule "heavy drinker and female -> they should cut back"
+dialect "mvel"
+when
+	Question(id == "gender", answer == "female");	
+	Question(id == "drinksPerWeek", $drinksPerWeek : answer > 7);	
+then
+	insertLogical(
+		new OtherRecommendation(
+			"heavyDrinking",
+			Priority.HIGH,
+			"You level of drinking is heavy. You shouldn't drink more that 3 drinks on any day or more than 7 per week", 
+			new Source(
+				"http://www.cnpp.usda.gov/Publications/DietaryGuidelines/2010/PolicyDoc/PolicyDoc.pdf",
+				"Dietary Guidelines for Americans 2010. Page 31."
+			)	 
+			 
+		)
+	);
+end
+

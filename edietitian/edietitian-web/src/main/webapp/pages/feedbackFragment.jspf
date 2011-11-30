@@ -1,0 +1,18 @@
+		<title>Feedback</title>
+		<div class="feedback">
+			<h2>Send Us Your Feedback!</h2>
+			<p>We'd love your feedback on eDietitian. If you have something  you'd like to pass on to us, fill out this form and we'll see it.</p>
+			
+			<FORM METHOD=POST ACTION="/edietitian-web/action/SubmitSuggestions.jsp">
+				<table>
+					<tr><td>What's your name?          </td><td><INPUT TYPE=TEXT NAME=name></td></tr>
+					<tr><td>What's your e-mail address?</td><td><INPUT TYPE=TEXT NAME=email></td></tr>
+				</table>
+					<p>
+					Enter the suggestion below:
+					<br>  
+					<textarea name="suggestion" style="height: 190px; width: 570px; "></textarea>
+					<P>
+				<INPUT TYPE=SUBMIT>
+			</FORM>
+		</div>
